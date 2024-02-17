@@ -1,0 +1,119 @@
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Scanner;
+
+public class Calculator {
+
+    private static final Map<String, Integer> romanNumerals = new HashMap<>();
+
+    static {
+        romanNumerals.put("I", 1);
+        romanNumerals.put("II", 2);
+        romanNumerals.put("III", 3);
+        romanNumerals.put("IV", 4);
+        romanNumerals.put("V", 5);
+        romanNumerals.put("VI", 6);
+        romanNumerals.put("VII", 7);
+        romanNumerals.put("VIII", 8);
+        romanNumerals.put("IX", 9);
+        romanNumerals.put("X", 10);
+    }
+
+    public static void main(String[] args) {
+
+        try (Scanner scanner = new Scanner(System.in)) {
+            System.out.println("Введите выражение (например, 2 + 3 или II * IV):");
+            String input = scanner.nextLine().trim();
+            String[] tokens = input.split(" ");
+
+            if (tokens.length != 3) {
+                throw new IllegalArgumentException("Неверный формат выражения");
+            }
+
+            String operand1 = tokens[0];
+            String operator = tokens[1];
+            String operand2 = tokens[2];
+
+            int num1, num2;
+
+            if (isRoman(operand1) && isRoman(operand2)) {
+                num1 = romanToArabic(operand1);
+                num2 = romanToArabic(operand2);
+            } else if (isArabic(operand1) && isArabic(operand2)) {
+                num1 = Integer.parseInt(operand1);
+                num2 = Integer.parseInt(operand2);
+            } else {
+                throw new IllegalArgumentException("Недопустимая комбинация арабских и римских цифр");
+            }
+
+            int result;
+
+            switch (operator) {
+                case "+":
+                    result = num1 + num2;
+                    break;
+                case "-":
+                    result = num1 - num2;
+                    break;
+                case "*":
+                    result = num1 * num2;
+                    break;
+                case "/":
+                    if (num2 == 0) {
+                        throw new ArithmeticException("Деление на ноль невозможно");
+                    }
+                    result = num1 / num2;
+                    break;
+                default:
+                    throw new IllegalArgumentException("Недопустимая арифметическая операция: " + operator);
+            }
+
+            if (isRoman(operand1) && isRoman(operand2)) {
+                if (result <= 0) {
+                    throw new IllegalArgumentException("Результат римской операции меньше единицы");
+                }
+                System.out.println(arabicToRoman(result));
+            } else {
+                System.out.println(result);
+            }
+
+        } catch (Exception e) {
+            System.out.println("Ошибка: " + e.getMessage());
+        }
+    }
+
+    private static boolean isArabic(String input) {
+        try {
+            int num = Integer.parseInt(input);
+            return num >= 1 && num <= 10;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
+    private static boolean isRoman(String input) {
+        return romanNumerals.containsKey(input);
+    }
+
+    private static int romanToArabic(String roman) {
+        return romanNumerals.get(roman);
+    }
+
+    private static String arabicToRoman(int number) {
+        for (Map.Entry<String, Integer> entry : romanNumerals.entrySet()) {
+            if (entry.getValue() == number) {
+                return entry.getKey();
+            }
+        }
+
+        StringBuilder roman = new StringBuilder();
+        for (Map.Entry<String, Integer> entry : romanNumerals.entrySet()) {
+            while (number >= entry.getValue()) {
+                roman.append(entry.getKey());
+                number -= entry.getValue();
+            }
+        }
+
+        return roman.toString();
+    }
+}
